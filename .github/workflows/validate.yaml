@@ -1,0 +1,26 @@
+name: Validate deployment companion
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  offline-validation:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install pinned rendering tool and YAML parser
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 --output /tmp/kubectl https://dl.k8s.io/release/v1.36.4/bin/linux/amd64/kubectl
+          echo '8b8f088da2dab964f853b38464033b1be15ede2839eca751482357c45abdd05a  /tmp/kubectl' | sha256sum --check
+          chmod 0755 /tmp/kubectl
+          python3 -m venv .venv
+          .venv/bin/pip install -r requirements-validation.txt
+      - name: Offline Kubernetes contracts and negative regressions
+        env:
+          KUBECTL: /tmp/kubectl
+        run: .venv/bin/python tests/check_examples.py
+      - name: Shared generator compatibility fixtures
+        run: node --test images/compat/patch-adapter.test.mjs
+# No cluster credentials, build/publish job, deployment or write permission.

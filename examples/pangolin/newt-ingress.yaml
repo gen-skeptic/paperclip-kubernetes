@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: paperclip
+  namespace: paperclip
+spec:
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: pangolin
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: newt
+              newt.instance: site-a
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: pangolin
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: newt
+              newt.instance: site-b
+      ports:
+        - protocol: TCP
+          port: 3100

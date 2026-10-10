@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: paperclip
+  namespace: paperclip
+spec:
+  template:
+    spec:
+      containers:
+        - name: paperclip
+          env:
+            - name: PAPERCLIP_DEPLOYMENT_EXPOSURE
+              value: public
+            - name: PAPERCLIP_PUBLIC_URL
+              value: https://agents.example.invalid
+            - name: PAPERCLIP_AUTH_PUBLIC_BASE_URL
+              value: https://agents.example.invalid
+            - name: PAPERCLIP_ALLOWED_HOSTNAMES
+              value: agents.example.invalid,localhost,127.0.0.1

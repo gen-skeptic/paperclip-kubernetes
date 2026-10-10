@@ -1,0 +1,10 @@
+# Only the compatibility helper and redistribution notices enter a build.
+**
+!images/
+!images/compat/
+!images/compat/Dockerfile
+!images/compat/patch-adapter.mjs
+!third_party/
+!third_party/PAPERCLIP-LICENSE
+!LICENSE
+!NOTICE.md

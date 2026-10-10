@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+auth.json
+config.toml
+*.sops.yaml
+*.pem
+*.key
+*.csv
+evidence/
+data/
+build/
+*.tar
+*.log
