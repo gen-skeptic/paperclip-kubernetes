@@ -12,6 +12,7 @@ contains them.
   private ClusterIP exposure, restricted networking and host-aware probes.
 - An optional Pangolin/Newt ingress overlay and human-versus-machine access guide.
 - A hash-guarded shared Codex MCP header-generator compatibility patch and tests.
+- A separately staged, hash-guarded MCP timeout-recovery and mutation-risk patch.
 - Database, backup, sandbox, release and license-review acceptance checklists.
 
 **Nothing is installed automatically.** Both examples have **zero replicas**.
@@ -48,6 +49,7 @@ python3 -m venv .venv
 .venv/bin/pip install -r requirements-validation.txt
 .venv/bin/python tests/check_examples.py
 node --test images/compat/patch-adapter.test.mjs
+node --experimental-vm-modules --test images/compat/patch-mcp-recovery.test.mjs
 kubectl kustomize examples/base
 kubectl kustomize examples/pangolin
 ```
@@ -55,6 +57,48 @@ kubectl kustomize examples/pangolin
 These are local rendering commands, **not** `kubectl apply`. Before installation,
 follow [deployment acceptance](docs/deployment.md), [access design](docs/access.md)
 and [release/security policy](docs/releases.md).
+
+## Staged MCP recovery patch
+
+See the [experimental candidate qualification](docs/candidates/mcp-recovery1.md)
+for the exact tested digest, alternate local build method, inherited findings
+and limits. Publishing a candidate does not activate these zero-replica examples.
+
+`images/compat/patch-mcp-recovery.mjs` targets exactly six source/compiled
+artifacts from upstream commit `467125fafb47a8520856504fecc48d6e32055db1` in the
+qualified image pinned by `images/compat/Dockerfile.mcp-recovery`. All hashes and
+markers are validated before any build-time write. Unknown versions, symlinks
+and previously patched files are rejected. The older recipe is unchanged.
+
+The patch gives remote MCP tool calls a 30-second default deadline, retaining
+the 60-second maximum and explicit caller deadlines. Other tool defaults stay
+at 10 seconds. A timeout or transport exception marks health degraded rather
+than hiding the last active, unquarantined catalog. Only the exact two transport
+failure messages qualify for this recovery path; missing credentials, HTTP
+authentication failures, malformed protocol responses and unrelated degraded
+states retain their existing attention/error behavior. A successful explicit
+call restores health. No timed-out call, especially a write, is replayed.
+
+Company, active/enabled connection, catalog, install, grant, profile, policy,
+actor, credential and endpoint guards remain mandatory. The gateway audit still
+records the timeout/fetch failure. Cached tools do not confer new permissions.
+
+The `capture` and `index` mutation verbs are recognized in namespaced and
+camelCase tool names. Catalog refresh labels these as writes, and runtime risk
+is conservatively escalated even for old cached entries. Explicit higher risk
+is never downgraded. Gateway risk metadata/annotations use the effective risk.
+After a separately approved rollout, refresh the existing catalog once to fix
+stored UI labels; do not recreate a connection, replace keys, replay uncertain
+writes or broaden its audience just to recover from a timeout.
+
+The default test command runs synthetic fixtures. Setting
+`PAPERCLIP_MCP_SOURCE_ROOT` to an inert copy's server directory adds pinned
+upstream dispatcher tests with fake transports and credentials. When that copy
+also contains the image's compiled modules and compiler, tests check all six
+artifacts and transpile the patched TypeScript. These tests never run a model,
+call a provider or access a real database. They are not a substitute for the
+upstream full typecheck/build/Vitest suite or an approved deployment canary.
+Neither this future recipe nor any live rollout is automatically executed.
 
 ## Future development
 

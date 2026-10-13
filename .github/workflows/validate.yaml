@@ -23,4 +23,6 @@ jobs:
         run: .venv/bin/python tests/check_examples.py
       - name: Shared generator compatibility fixtures
         run: node --test images/compat/patch-adapter.test.mjs
+      - name: MCP recovery and mutation-risk fixtures
+        run: node --experimental-vm-modules --test images/compat/patch-mcp-recovery.test.mjs
 # No cluster credentials, build/publish job, deployment or write permission.

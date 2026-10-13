@@ -1,0 +1,15 @@
+# Future credential-free recipe only; not built or published by CI.
+# Preserve the already-qualified runtime, dependency/security and MCP patches.
+FROM ghcr.io/gen-skeptic/paperclip-codex-mcp-compat@sha256:87868afb2c8becff04ba996e1dc9582ffee8b671f2e7b89c33c970151da9153e
+USER 1000:1000
+COPY --chown=1000:1000 images/compat/patch-mcp-recovery.mjs /app/paperclip-mcp-recovery.mjs
+COPY third_party/PAPERCLIP-LICENSE /usr/share/doc/paperclip-companion/PAPERCLIP-LICENSE
+COPY LICENSE /usr/share/doc/paperclip-companion/LICENSE
+COPY NOTICE.md /usr/share/doc/paperclip-companion/NOTICE.md
+RUN node /app/paperclip-mcp-recovery.mjs --apply
+LABEL org.opencontainers.image.source="https://github.com/gen-skeptic/paperclip-kubernetes" \
+      org.opencontainers.image.licenses="MIT" \
+      io.paperclip-companion.upstream-commit="467125fafb47a8520856504fecc48d6e32055db1" \
+      io.paperclip-companion.compatibility="remote-mcp-recovery-and-mutation-risk-v1"
+# Inherit entrypoint, command, environment and sandbox/security configuration.
+# MIT is the companion license, not a claim about every bundled dependency.
